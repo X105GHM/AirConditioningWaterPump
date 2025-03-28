@@ -8,6 +8,7 @@
 namespace platform
 {
     extern volatile uint32_t timerMillis;
+
     inline uint32_t millis() noexcept
     {
         uint32_t m;
@@ -16,10 +17,22 @@ namespace platform
         sei();
         return m;
     }
+
     inline void delay(uint32_t ms) noexcept
     {
         uint32_t start = millis();
         while (millis() - start < ms);
+    }
+
+    inline void delayMicroseconds(uint16_t us) noexcept
+    {
+        uint16_t iterations = (us + 3) / 4;
+        __asm__ volatile (
+            "1: sbiw %0, 1 \n\t"  
+            "brne 1b"      
+            : "=w" (iterations)
+            : "0" (iterations)
+        );
     }
 }
 

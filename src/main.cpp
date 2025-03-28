@@ -1,13 +1,10 @@
-#ifndef F_CPU
-#define F_CPU 1000000UL
-#endif // F_CPU
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "platform/arduino_compat.hpp"
 #include "sensor/sensor.hpp"
 #include "pump/pump.hpp"
 #include "buzzer/buzzer.hpp"
+#include "hardware/analog_io.hpp"
 
 volatile uint32_t platform::timerMillis = 0;
 
@@ -24,13 +21,27 @@ ISR(TIMER0_COMPA_vect)
   platform::timerMillis++;
 }
 
+uint32_t getPumpDuration()
+{
+  uint16_t adcValue = analog_io::readADC(0);
+  const uint32_t minDuration = 30000UL;
+  const uint32_t maxDuration = 1200000UL;
+  return minDuration + ((uint32_t)adcValue * (maxDuration - minDuration)) / 1023;
+}
+
 int main() noexcept
 {
+
   initTimer0();
+  analog_io::initADC();
   sei();
+
   sensor::Sensor waterSensor(0);
   pump::Pump waterPump(1);
   buzzer::Buzzer errorBuzzer(2);
+
+  uint32_t pumpDuration = getPumpDuration();
+
   while (true)
   {
     if (waterSensor.isTriggered())
@@ -41,7 +52,8 @@ int main() noexcept
       {
         waterPump.start();
         uint32_t cycleStart = platform::millis();
-        while ((platform::millis() - cycleStart) < 30000);
+      
+        while ((platform::millis() - cycleStart) < pumpDuration);
         waterPump.stop();
         if (!waterSensor.isTriggered())
           break;
