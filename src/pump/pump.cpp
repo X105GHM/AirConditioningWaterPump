@@ -7,16 +7,19 @@ namespace pump
     {
         hardware::pinMode(controlPin, hardware::PinMode::Output);
     }
+
     void Pump::start() noexcept
     {
         running = true;
-        hardware::digitalWrite(controlPin, true);
+        hardware::digitalWrite(controlPin, LOW);
     }
+
     void Pump::stop() noexcept
     {
         running = false;
-        hardware::digitalWrite(controlPin, false);
+        hardware::digitalWrite(controlPin, HIGH);
     }
+
     bool Pump::isRunning() const noexcept
     {
         return running;

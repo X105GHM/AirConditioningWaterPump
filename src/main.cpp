@@ -5,6 +5,7 @@
 #include "pump/pump.hpp"
 #include "buzzer/buzzer.hpp"
 #include "hardware/analog_io.hpp"
+#include "hardware/digital_io.hpp"
 
 volatile uint32_t platform::timerMillis = 0;
 
@@ -23,22 +24,23 @@ ISR(TIMER0_COMPA_vect)
 
 uint32_t getPumpDuration()
 {
-  uint16_t adcValue = analog_io::readADC(0);
+  uint16_t adcValue = analog_io::readADC(2);
   const uint32_t minDuration = 30000UL;
-  const uint32_t maxDuration = 1200000UL;
+  const uint32_t maxDuration = 14400000UL;
   return minDuration + ((uint32_t)adcValue * (maxDuration - minDuration)) / 1023;
 }
 
 int main() noexcept
 {
-
   initTimer0();
   analog_io::initADC();
   sei();
 
-  sensor::Sensor waterSensor(0);
-  pump::Pump waterPump(1);
-  buzzer::Buzzer errorBuzzer(2);
+  sensor::Sensor waterSensor(1);
+  pump::Pump waterPump(4);
+  buzzer::Buzzer errorBuzzer(3);
+
+  hardware::digitalWrite(4, HIGH);
 
   uint32_t pumpDuration = getPumpDuration();
 

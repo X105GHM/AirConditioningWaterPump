@@ -14,6 +14,7 @@ namespace hardware
             DDRB &= ~(1 << pin);
         }
     }
+
     void digitalWrite(uint8_t pin, bool value) noexcept
     {
         if (value)
@@ -25,6 +26,7 @@ namespace hardware
             PORTB &= ~(1 << pin);
         }
     }
+    
     bool digitalRead(uint8_t pin) noexcept
     {
         return (PINB & (1 << pin)) != 0;
